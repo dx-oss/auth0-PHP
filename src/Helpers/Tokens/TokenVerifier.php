@@ -101,9 +101,9 @@ class TokenVerifier
         }
 
         if (!in_array($tokenIss, $this->authorized_issuers)) {
-                throw new InvalidTokenException( sprintf(
-                    'Issuer (iss) claim mismatch in the ID token; expected one of "%s", found "%s"', implode(', ', $this->authorized_issuers), $tokenIss
-                ) );
+            throw new InvalidTokenException( sprintf(
+                'Issuer (iss) claim mismatch in the ID token; expected one of "%s", found "%s"', implode(', ', $this->authorized_issuers), $tokenIss
+            ) );
         }
 
         /*

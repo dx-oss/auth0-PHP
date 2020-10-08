@@ -214,6 +214,13 @@ class Auth0
     protected $cacheHandler;
 
     /**
+     * Authorized issuers
+     *
+     * @var array
+     */
+    protected $authorized_issuers;
+
+    /**
      * BaseAuth0 Constructor.
      *
      * @param array $config - Required configuration options.
@@ -277,6 +284,7 @@ class Auth0
         $this->maxAge        = $config['max_age'] ?? null;
         $this->idTokenLeeway = $config['id_token_leeway'] ?? null;
         $this->jwksUri       = $config['jwks_uri'] ?? 'https://'.$this->domain.'/.well-known/jwks.json';
+        $this->authorized_issuers = $config['authorized_issuers'];
 
         $this->idTokenAlg = $config['id_token_alg'] ?? 'RS256';
         if (! in_array( $this->idTokenAlg, ['HS256', 'RS256'] )) {
@@ -653,7 +661,6 @@ class Auth0
      */
     public function decodeIdToken(string $idToken, array $verifierOptions = []) : array
     {
-        $idTokenIss  = 'https://'.$this->domain.'/';
         $sigVerifier = null;
         if ('RS256' === $this->idTokenAlg) {
             $jwksHttpOptions = array_merge( $this->guzzleOptions, [ 'base_uri' => $this->jwksUri ] );
@@ -669,7 +676,7 @@ class Auth0
             self::TRANSIENT_NONCE_KEY => $this->transientHandler->getOnce(self::TRANSIENT_NONCE_KEY)
         ];
 
-        $idTokenVerifier = new IdTokenVerifier($idTokenIss, $this->clientId, $sigVerifier);
+        $idTokenVerifier = new IdTokenVerifier($this->authorized_issuers, $this->clientId, $sigVerifier);
         return $idTokenVerifier->verify($idToken, $verifierOptions);
     }
 
