@@ -17,9 +17,9 @@ class TokenVerifier
     /**
      * Token issuer base URL expected.
      *
-     * @var string
+     * @var array
      */
-    protected $issuer;
+    protected $authorized_issuers;
 
     /**
      * Token audience expected.
@@ -45,13 +45,13 @@ class TokenVerifier
     /**
      * TokenVerifier constructor.
      *
-     * @param string            $issuer   Token issuer base URL expected.
+     * @param array[string]     $issuers  Token issuers base URL expected.
      * @param string            $audience Token audience expected.
      * @param SignatureVerifier $verifier Token signature verifier.
      */
-    public function __construct(string $issuer, string $audience, SignatureVerifier $verifier)
+    public function __construct(array $issuers, string $audience, SignatureVerifier $verifier)
     {
-        $this->issuer   = $issuer;
+        $this->authorized_issuers = $issuers;
         $this->audience = $audience;
         $this->verifier = $verifier;
     }
@@ -100,10 +100,10 @@ class TokenVerifier
             throw new InvalidTokenException('Issuer (iss) claim must be a string present in the ID token');
         }
 
-        if ($tokenIss !== $this->issuer) {
-            throw new InvalidTokenException( sprintf(
-                'Issuer (iss) claim mismatch in the ID token; expected "%s", found "%s"', $this->issuer, $tokenIss
-            ) );
+        if (!in_array($tokenIss, $this->authorized_issuers)) {
+                throw new InvalidTokenException( sprintf(
+                    'Issuer (iss) claim mismatch in the ID token; expected one of "%s", found "%s"', implode(', ', $this->authorized_issuers), $tokenIss
+                ) );
         }
 
         /*
